@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { padding: 20px; font-family: Arial, sans-serif; }
+    </style>
+</head>
+<body>
+    <div class=" p-5 bg-gray-500 rounded-lg shadow-xl shadow-black">
+        <h1 class="text-2xl font-bold mb-5 text-center">Expense Tracker</h1>
+        <form id="expenseForm" class="mb-5">
+            <label for="expense" class="block text-lg font-medium">Expense Amount:</label>
+            <input type="number" name="expense" id="expense" class="w-full p-2 border rounded mb-3" required>
+            
+            <label for="desc" class="block text-lg font-medium">Description:</label>
+            <input type="text" name="desc" id="desc" class="w-full p-2 border rounded mb-3" required>
+            
+            <label for="category" class="block text-lg font-medium">Category:</label>
+            <select name="category" id="category" class="w-full p-2 border rounded mb-3" required>
+                <option value="">Select Category</option>
+                <option value="movie">Movie</option>
+                <option value="date">Date</option>
+                <option value="fee">Fee</option>
+                <option value="dinner">Dinner</option>
+                <option value="dimag">Dimag</option>
+            </select>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-gray-300 to-slate-700 text-white p-2 rounded">Add Expense</button>
+        </form>
+
+        <h2 class="text-xl font-bold mb-3">Expense List</h2>
+        <ul id="expenseList" class="space-y-3"></ul>
+    </div>
+
+    <script>
+        const form = document.getElementById('expenseForm');
+        const expenseList = document.getElementById('expenseList');
+
+       
+        // document.addEventListener('DOMContentLoaded', loadExpenses);
+
+        form.addEventListener('submit', handleOnSubmit);
+
+        function handleOnSubmit(event) {
+            event.preventDefault();
+            const expense = event.target.expense.value;
+            const description = event.target.desc.value;
+            const category = event.target.category.value;
+
+            const details = {
+                id: Date.now(),
+                expense,
+                description,
+                category,
+            };
+
+            saveExpense(details);
+            form.reset();
+        }
+
+        function saveExpense(details) {
+            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            expenses.push(details);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+
+            addExpenseToUI(details);
+        }
+
+        function addExpenseToUI(expense) {
+            const li = document.createElement('li');
+            li.className = 'bg-white p-3 rounded shadow flex justify-between items-center';
+            li.dataset.id = expense.id;
+
+            li.innerHTML = `
+                <div>
+                    <p><strong>Amount:</strong> ${expense.expense}</p>
+                    <p><strong>Description:</strong> ${expense.description}</p>
+                    <p><strong>Category:</strong> ${expense.category}</p>
+                </div>
+                <div class="space-x-2">
+                    <button onclick="editExpense(${expense.id})" class="bg-gradient-to-r from-gray-300 to-slate-700 p-2 rounded ">Edit</button>
+                    <button onclick="deleteExpense(${expense.id})" class="bg-gradient-to-r from-gray-300 to-slate-700  p-2 rounded">Delete</button>
+                </div>
+            `;
+            expenseList.appendChild(li);
+        }
+
+        function deleteExpense(id) {
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            expenses = expenses.filter(expense => expense.id !== id);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+
+            const li = expenseList.querySelector(`li[data-id='${id}']`);
+            if (li) expenseList.removeChild(li);
+        }
+
+        function editExpense(id) {
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            const expenseToEdit = expenses.find(expense => expense.id === id);
+
+            if (expenseToEdit) {
+                document.getElementById('expense').value = expenseToEdit.expense;
+                document.getElementById('desc').value = expenseToEdit.description;
+                document.getElementById('category').value = expenseToEdit.category;
+
+                deleteExpense(id);
+            }
+        }
+
+        // function loadExpenses() {
+        //     const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+        //     expenses.forEach(addExpenseToUI);
+        // }
+    </script>
+</body>
+</html>
